@@ -61,8 +61,16 @@ exports.handler = async (event) => {
       };
     }
 
-    const reply =
-      json?.candidates?.[0]?.content?.parts?.map((p) => p.text).join("") || "No response";
+    let reply = "No reply";
+
+if (json?.candidates?.length) {
+  const parts = json.candidates[0].content?.parts || [];
+  reply = parts.map(p => p.text || "").join("").trim() || "No reply";
+}
+
+if (json?.error?.message) {
+  reply = json.error.message;
+}
 
     return { statusCode: 200, headers, body: JSON.stringify({ reply }) };
   } catch (err) {
