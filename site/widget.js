@@ -54,7 +54,7 @@
       const last = msgs.lastChild;
 
       try {
-        const r = await fetch("/.netlify/functions/chat", {
+        const r = await fetch("https://chatbotbis.netlify.app/.netlify/functions/chat", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ message: t }),
