@@ -81,9 +81,18 @@ exports.handler = async (event) => {
       reply = json.error.message;
     }
 
-    if (!reply) reply = "No reply";
+   if (!reply) {
+  return {
+    statusCode: 200,
+    headers,
+    body: JSON.stringify({
+      reply: "No reply",
+      debug: json
+    }),
+  };
+}
 
-    return { statusCode: 200, headers, body: JSON.stringify({ reply }) };
+return { statusCode: 200, headers, body: JSON.stringify({ reply }) };
   } catch (err) {
     return { statusCode: 500, headers, body: JSON.stringify({ error: "Server error" }) };
   }
