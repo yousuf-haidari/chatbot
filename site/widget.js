@@ -1,16 +1,24 @@
-document.body.style.border = "10px solid red";
-alert("WIDGET LOADED");
 (() => {
-  // UI
+  // Always-on-top root layer (prevents being hidden by site overlays)
+  const root = document.createElement("div");
+  root.id = "cb-root";
+  root.style.cssText =
+    "position:fixed;inset:0;pointer-events:none;z-index:2147483647;";
+  document.body.appendChild(root);
+
+  // Chat button
   const btn = document.createElement("button");
   btn.textContent = "Chat";
   btn.style.cssText =
-    "position:fixed;bottom:18px;right:18px;padding:10px 14px;border-radius:999px;border:1px solid #ccc;background:#fff;cursor:pointer;z-index:99999;";
-  document.body.appendChild(btn);
+    "position:fixed;bottom:18px;right:18px;padding:10px 14px;border-radius:999px;border:1px solid #ccc;background:#fff;cursor:pointer;z-index:2147483647;";
+  btn.style.pointerEvents = "auto";
+  root.appendChild(btn);
 
+  // Chat box
   const box = document.createElement("div");
   box.style.cssText =
-    "position:fixed;bottom:70px;right:18px;width:320px;height:420px;border:1px solid #ccc;border-radius:12px;background:#fff;display:none;flex-direction:column;overflow:hidden;z-index:99999;";
+    "position:fixed;bottom:70px;right:18px;width:320px;height:420px;border:1px solid #ccc;border-radius:12px;background:#fff;display:none;flex-direction:column;overflow:hidden;z-index:2147483647;";
+  box.style.pointerEvents = "auto";
   box.innerHTML = `
     <div style="padding:10px;border-bottom:1px solid #eee;font-weight:600;">Support Bot</div>
     <div id="cb-messages" style="flex:1;padding:10px;overflow:auto;font-family:Arial;font-size:14px;"></div>
@@ -19,9 +27,12 @@ alert("WIDGET LOADED");
       <button id="cb-send" style="padding:8px 12px;border:1px solid #ccc;border-radius:8px;background:#f7f7f7;cursor:pointer;">Send</button>
     </div>
   `;
-  document.body.appendChild(box);
+  root.appendChild(box);
 
-  btn.onclick = () => (box.style.display = box.style.display === "none" ? "flex" : "none");
+  // Toggle open/close
+  btn.onclick = () => {
+    box.style.display = box.style.display === "none" ? "flex" : "none";
+  };
 
   const messages = box.querySelector("#cb-messages");
   const input = box.querySelector("#cb-input");
@@ -38,6 +49,7 @@ alert("WIDGET LOADED");
   async function sendMsg() {
     const text = input.value.trim();
     if (!text) return;
+
     input.value = "";
     add("You", text);
     add("Bot", "…");
