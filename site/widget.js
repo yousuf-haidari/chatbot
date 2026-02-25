@@ -1,3 +1,4 @@
+alert("WIDGET LOADED");
 (() => {
   // UI
   const btn = document.createElement("button");
