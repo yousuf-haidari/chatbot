@@ -1,5 +1,4 @@
 exports.handler = async (event) => {
-  // CORS + preflight
   const headers = {
     "Content-Type": "application/json",
     "Access-Control-Allow-Origin": "*",
@@ -33,7 +32,6 @@ exports.handler = async (event) => {
       return { statusCode: 500, headers, body: JSON.stringify({ error: "Missing GEMINI_API_KEY" }) };
     }
 
-    // Use a model name that is commonly available
     const model = "gemini-1.5-flash-latest";
     const url =
       "https://generativelanguage.googleapis.com/v1beta/models/" +
@@ -51,26 +49,39 @@ exports.handler = async (event) => {
 
     const json = await geminiRes.json();
 
+    // If HTTP error, still try to return a useful message
     if (!geminiRes.ok) {
       return {
         statusCode: geminiRes.status,
         headers,
         body: JSON.stringify({
           error: json?.error?.message || "Gemini request failed",
+          raw: json, // helpful for debugging
         }),
       };
     }
 
-    let reply = "No reply";
+    // Robust reply extraction (handles blocks / finish reasons)
+    let reply = "";
 
-if (json?.candidates?.length) {
-  const parts = json.candidates[0].content?.parts || [];
-  reply = parts.map(p => p.text || "").join("").trim() || "No reply";
-}
+    if (json?.candidates?.length) {
+      const parts = json.candidates[0].content?.parts || [];
+      reply = parts.map((p) => p.text || "").join("").trim();
+    }
 
-if (json?.error?.message) {
-  reply = json.error.message;
-}
+    if (!reply && json?.promptFeedback?.blockReason) {
+      reply = `Blocked: ${json.promptFeedback.blockReason}`;
+    }
+
+    if (!reply && json?.candidates?.[0]?.finishReason) {
+      reply = `No text (finishReason: ${json.candidates[0].finishReason})`;
+    }
+
+    if (!reply && json?.error?.message) {
+      reply = json.error.message;
+    }
+
+    if (!reply) reply = "No reply";
 
     return { statusCode: 200, headers, body: JSON.stringify({ reply }) };
   } catch (err) {
