@@ -1,12 +1,10 @@
-(() => {
-  // Always-on-top root layer (prevents being hidden by site overlays)
+window.addEventListener("DOMContentLoaded", () => {
   const root = document.createElement("div");
   root.id = "cb-root";
   root.style.cssText =
     "position:fixed;inset:0;pointer-events:none;z-index:2147483647;";
   document.body.appendChild(root);
 
-  // Chat button
   const btn = document.createElement("button");
   btn.textContent = "Chat";
   btn.style.cssText =
@@ -14,7 +12,6 @@
   btn.style.pointerEvents = "auto";
   root.appendChild(btn);
 
-  // Chat box
   const box = document.createElement("div");
   box.style.cssText =
     "position:fixed;bottom:70px;right:18px;width:320px;height:420px;border:1px solid #ccc;border-radius:12px;background:#fff;display:none;flex-direction:column;overflow:hidden;z-index:2147483647;";
@@ -29,7 +26,6 @@
   `;
   root.appendChild(box);
 
-  // Toggle open/close
   btn.onclick = () => {
     box.style.display = box.style.display === "none" ? "flex" : "none";
   };
@@ -76,4 +72,4 @@
   });
 
   add("Bot", "Hi! Ask me anything.");
-})();
+});
