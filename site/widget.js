@@ -3,7 +3,7 @@
     if (!document.body) return setTimeout(init, 50);
 
     // ✅ PUT YOUR BOT PFP HERE (robot image URL)
-    const BOT_AVATAR_URL = "C:\Users\moham\Downloads\ChatGPT Image Feb 26, 2026, 11_07_33 AM.png";
+    const BOT_AVATAR_URL = "https://chatbotbis.netlify.app/robot.png";
 
     // ✅ Reads: <script src=".../widget.js" data-client="client1"></script>
     function getClientId() {
