@@ -3,7 +3,7 @@
     if (!document.body) return setTimeout(init, 50);
 
     // ✅ PUT YOUR BOT PFP HERE (robot image URL)
-    const BOT_AVATAR_URL = "PASTE_YOUR_ROBOT_IMAGE_URL_HERE";
+    const BOT_AVATAR_URL = "C:\Users\moham\Downloads\ChatGPT Image Feb 26, 2026, 11_07_33 AM.png";
 
     // ✅ Reads: <script src=".../widget.js" data-client="client1"></script>
     function getClientId() {
