@@ -3,8 +3,22 @@
     if (!document.body) return setTimeout(init, 50);
 
     // ✅ PUT YOUR BOT PFP HERE (robot image URL)
-    // Example: const BOT_AVATAR_URL = "https://yourdomain.com/robot.png";
     const BOT_AVATAR_URL = "PASTE_YOUR_ROBOT_IMAGE_URL_HERE";
+
+    // ✅ Reads: <script src=".../widget.js" data-client="client1"></script>
+    function getClientId() {
+      try {
+        const scripts = Array.from(document.getElementsByTagName("script"));
+        const me =
+          scripts.find((s) => (s.src || "").includes("/widget.js")) ||
+          scripts.find((s) => (s.src || "").includes("widget.js")) ||
+          null;
+        return (me && me.dataset && me.dataset.client) ? me.dataset.client : "default";
+      } catch {
+        return "default";
+      }
+    }
+    const CLIENT_ID = getClientId();
 
     // ===== Root layer (always on top) =====
     const root = document.createElement("div");
@@ -58,8 +72,8 @@
       .cb-bubble{
         max-width:76%;
         padding:10px 12px;border-radius:14px;
-        background:#334155; /* gray */
-        color:#e5e7eb;      /* light gray text */
+        background:#334155;
+        color:#e5e7eb;
         border:1px solid rgba(255,255,255,.08);
         white-space:pre-wrap;
       }
@@ -112,6 +126,15 @@
     const inp = box.querySelector("#cb-inp");
     const sendBtn = box.querySelector("#cb-send");
 
+    function escapeHtml(s) {
+      return String(s)
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;")
+        .replaceAll("'", "&#039;");
+    }
+
     function addUser(text) {
       const row = document.createElement("div");
       row.className = "cb-row user";
@@ -120,7 +143,7 @@
       msgs.scrollTop = msgs.scrollHeight;
     }
 
-    // ✅ Bot message includes bot pfp ONLY (no user pfp)
+    // ✅ Bot message includes bot pfp ONLY
     function addBot(text) {
       const row = document.createElement("div");
       row.className = "cb-row bot";
@@ -131,15 +154,6 @@
       msgs.appendChild(row);
       msgs.scrollTop = msgs.scrollHeight;
       return row;
-    }
-
-    function escapeHtml(s) {
-      return String(s)
-        .replaceAll("&", "&amp;")
-        .replaceAll("<", "&lt;")
-        .replaceAll(">", "&gt;")
-        .replaceAll('"', "&quot;")
-        .replaceAll("'", "&#039;");
     }
 
     async function sendMsg() {
@@ -156,7 +170,7 @@
         const r = await fetch("https://chatbotbis.netlify.app/.netlify/functions/chat", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ message: t }),
+          body: JSON.stringify({ message: t, clientId: CLIENT_ID }), // ✅ sends clientId
         });
 
         const text = await r.text();
