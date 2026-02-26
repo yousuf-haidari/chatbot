@@ -1,180 +1,140 @@
-(function () {
-  function init() {
-    if (!document.body) return setTimeout(init, 50);
+// netlify/functions/chat.js
 
-    // ✅ PUT YOUR BOT PFP HERE (robot image URL)
-    // Example: const BOT_AVATAR_URL = "https://yourdomain.com/robot.png";
-    const BOT_AVATAR_URL = "PASTE_YOUR_ROBOT_IMAGE_URL_HERE";
+exports.handler = async (event) => {
+  const headers = {
+    "Content-Type": "application/json",
+    "Access-Control-Allow-Origin": "*",
+    "Access-Control-Allow-Headers": "Content-Type",
+    "Access-Control-Allow-Methods": "POST,OPTIONS",
+  };
 
-    // ===== Root layer (always on top) =====
-    const root = document.createElement("div");
-    root.style.cssText =
-      "position:fixed;inset:0;pointer-events:none;z-index:2147483647;";
-    document.body.appendChild(root);
-
-    // ===== Floating button =====
-    const btn = document.createElement("button");
-    btn.type = "button";
-    btn.innerHTML = `
-      <span style="display:flex;align-items:center;gap:10px;">
-        <span style="width:10px;height:10px;border-radius:999px;background:#4ade80;display:inline-block;"></span>
-        Chat
-      </span>
-    `;
-    btn.style.cssText =
-      "position:fixed;bottom:20px;right:20px;padding:12px 16px;background:#061a3a;color:#fff;border:1px solid rgba(255,255,255,.12);border-radius:999px;font-family:Arial;font-weight:600;cursor:pointer;pointer-events:auto;box-shadow:0 12px 30px rgba(0,0,0,.35);";
-    root.appendChild(btn);
-
-    // ===== Chat box =====
-    const box = document.createElement("div");
-    box.style.cssText =
-      "position:fixed;bottom:76px;right:20px;width:340px;height:460px;background:#061a3a;border-radius:16px;border:1px solid rgba(255,255,255,.12);display:none;flex-direction:column;overflow:hidden;pointer-events:auto;box-shadow:0 18px 50px rgba(0,0,0,.45);";
-    root.appendChild(box);
-
-    // ===== Styles (dark blue + gray messages) =====
-    const styles = `
-      .cb-header{
-        display:flex;align-items:center;justify-content:space-between;
-        padding:12px 12px;border-bottom:1px solid rgba(255,255,255,.10);
-        color:#fff;font-family:Arial;
-      }
-      .cb-title{display:flex;align-items:center;gap:10px;font-weight:700;}
-      .cb-botpfp{
-        width:28px;height:28px;border-radius:999px;object-fit:cover;
-        border:1px solid rgba(255,255,255,.15);
-        background:rgba(255,255,255,.08);
-      }
-      .cb-close{
-        background:transparent;color:#cbd5e1;border:0;cursor:pointer;
-        font-size:18px;line-height:1;padding:6px 10px;border-radius:10px;
-      }
-      .cb-close:hover{background:rgba(255,255,255,.08);}
-      .cb-messages{
-        flex:1;padding:12px;overflow:auto;font-family:Arial;font-size:14px;
-      }
-      .cb-row{display:flex;gap:10px;margin:10px 0;}
-      .cb-row.user{justify-content:flex-end;}
-      .cb-row.bot{justify-content:flex-start;align-items:flex-end;}
-      .cb-bubble{
-        max-width:76%;
-        padding:10px 12px;border-radius:14px;
-        background:#334155; /* gray */
-        color:#e5e7eb;      /* light gray text */
-        border:1px solid rgba(255,255,255,.08);
-        white-space:pre-wrap;
-      }
-      .cb-inputbar{
-        display:flex;gap:8px;padding:12px;border-top:1px solid rgba(255,255,255,.10);
-        background:rgba(255,255,255,.02);
-      }
-      .cb-input{
-        flex:1;padding:10px 12px;border-radius:12px;
-        border:1px solid rgba(255,255,255,.12);
-        background:#021027;color:#e5e7eb;
-        outline:none;font-family:Arial;
-      }
-      .cb-input::placeholder{color:#94a3b8;}
-      .cb-send{
-        padding:10px 12px;border-radius:12px;
-        border:1px solid rgba(255,255,255,.12);
-        background:#0b2f66;color:#fff;
-        cursor:pointer;font-family:Arial;font-weight:700;
-      }
-      .cb-send:hover{filter:brightness(1.08);}
-      .cb-send:active{transform:translateY(1px);}
-    `;
-
-    box.innerHTML = `
-      <style>${styles}</style>
-
-      <div class="cb-header">
-        <div class="cb-title">
-          <img class="cb-botpfp" src="${BOT_AVATAR_URL}" alt="bot" onerror="this.style.display='none'"/>
-          <span>Support</span>
-        </div>
-        <button class="cb-close" type="button" aria-label="Close">✕</button>
-      </div>
-
-      <div class="cb-messages" id="cb-msgs"></div>
-
-      <div class="cb-inputbar">
-        <input class="cb-input" id="cb-inp" placeholder="Type your message..." />
-        <button class="cb-send" id="cb-send" type="button">Send</button>
-      </div>
-    `;
-
-    // Toggle open/close
-    const closeBtn = box.querySelector(".cb-close");
-    btn.onclick = () => (box.style.display = box.style.display === "none" ? "flex" : "none");
-    closeBtn.onclick = () => (box.style.display = "none");
-
-    const msgs = box.querySelector("#cb-msgs");
-    const inp = box.querySelector("#cb-inp");
-    const sendBtn = box.querySelector("#cb-send");
-
-    function addUser(text) {
-      const row = document.createElement("div");
-      row.className = "cb-row user";
-      row.innerHTML = `<div class="cb-bubble">${escapeHtml(text)}</div>`;
-      msgs.appendChild(row);
-      msgs.scrollTop = msgs.scrollHeight;
+  try {
+    if (event.httpMethod === "OPTIONS") return { statusCode: 204, headers, body: "" };
+    if (event.httpMethod !== "POST") {
+      return { statusCode: 405, headers, body: JSON.stringify({ error: "Use POST" }) };
     }
 
-    // ✅ Bot message includes bot pfp ONLY (no user pfp)
-    function addBot(text) {
-      const row = document.createElement("div");
-      row.className = "cb-row bot";
-      row.innerHTML = `
-        <img class="cb-botpfp" src="${BOT_AVATAR_URL}" alt="bot" onerror="this.style.display='none'"/>
-        <div class="cb-bubble">${escapeHtml(text)}</div>
-      `;
-      msgs.appendChild(row);
-      msgs.scrollTop = msgs.scrollHeight;
-      return row;
+    let body = {};
+    try {
+      body = JSON.parse(event.body || "{}");
+    } catch {
+      return { statusCode: 400, headers, body: JSON.stringify({ error: "Invalid JSON" }) };
     }
 
-    function escapeHtml(s) {
-      return String(s)
-        .replaceAll("&", "&amp;")
-        .replaceAll("<", "&lt;")
-        .replaceAll(">", "&gt;")
-        .replaceAll('"', "&quot;")
-        .replaceAll("'", "&#039;");
+    const message = String(body.message || "").trim();
+    if (!message) {
+      return { statusCode: 400, headers, body: JSON.stringify({ error: "Missing message" }) };
     }
 
-    async function sendMsg() {
-      const t = inp.value.trim();
-      if (!t) return;
-
-      inp.value = "";
-      addUser(t);
-
-      const thinkingRow = addBot("…");
-      const bubble = thinkingRow.querySelector(".cb-bubble");
-
-      try {
-        const r = await fetch("https://chatbotbis.netlify.app/.netlify/functions/chat", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ message: t }),
-        });
-
-        const text = await r.text();
-        let j = {};
-        try { j = JSON.parse(text); } catch {}
-
-        const answer = (j.reply || j.error || text || "No reply").toString();
-        bubble.textContent = answer;
-      } catch {
-        bubble.textContent = "Error";
-      }
+    const key = process.env.GEMINI_API_KEY;
+    if (!key) {
+      return { statusCode: 500, headers, body: JSON.stringify({ error: "Missing GEMINI_API_KEY" }) };
     }
 
-    sendBtn.onclick = sendMsg;
-    inp.addEventListener("keydown", (e) => e.key === "Enter" && sendMsg());
+    // =========================
+    // ✅ EDIT THIS FOR EACH CLIENT (customer service info)
+    // =========================
+    const BUSINESS_CONTEXT = `
+Business name: YOUR BUSINESS NAME
+Location: YOUR ADDRESS / CITY
+Hours: Mon–Fri 9am–6pm, Sat 10am–4pm, Sun closed
+Phone: (000) 000-0000
+Email: support@yourdomain.com
+Website: https://yourdomain.com
 
-    addBot("Hi! How can I help?");
+Services / Products:
+- Service 1
+- Service 2
+- Service 3
+
+Policies:
+- Refunds: (write your policy)
+- Shipping/Delivery: (write your policy)
+- Booking: (how to book)
+
+If user asks to book/order: tell them exactly how (link/phone).
+`;
+
+    // Optional: mini FAQ (keep short)
+    const FAQ = `
+FAQ:
+Q: Where are you located?
+A: (answer)
+
+Q: What are your hours?
+A: (answer)
+
+Q: How do I book?
+A: (answer)
+`;
+
+    // =========================
+    // ✅ CUSTOMER SERVICE BEHAVIOR (not ChatGPT)
+    // =========================
+    const SUPPORT_RULES = `
+You are a professional CUSTOMER SUPPORT agent for this business.
+You are NOT a general chatbot.
+
+Rules:
+- Keep replies SHORT (1–4 sentences).
+- Answer ONLY using the business context + FAQ above.
+- If the question is unrelated to the business, say:
+  "I can help with our services, hours, pricing, and booking. What do you need?"
+- If you are missing info, ask ONE clarifying question.
+- If the user wants booking/order: give clear next step (phone/link/hours).
+- Don’t ramble. Don’t give life advice. Don’t mention policies/rules unless needed.
+- End with a helpful question when appropriate (e.g., "What day works for you?").
+`;
+
+    const prompt = `
+${BUSINESS_CONTEXT}
+
+${FAQ}
+
+${SUPPORT_RULES}
+
+Customer message: ${message}
+Reply as the support agent:
+`;
+
+    // Use a model your key supports (from your listModels output)
+    const model = "gemini-2.5-flash";
+    const url =
+      `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=` +
+      encodeURIComponent(key);
+
+    const geminiRes = await fetch(url, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        // Lower randomness = more “support agent” feel
+        generationConfig: { temperature: 0.3, topP: 0.9 },
+        contents: [{ role: "user", parts: [{ text: prompt }] }],
+      }),
+    });
+
+    const json = await geminiRes.json();
+
+    if (!geminiRes.ok) {
+      return {
+        statusCode: geminiRes.status,
+        headers,
+        body: JSON.stringify({ error: json?.error?.message || "Gemini request failed" }),
+      };
+    }
+
+    let reply = "";
+    if (json?.candidates?.length) {
+      const parts = json.candidates[0].content?.parts || [];
+      reply = parts.map((p) => p.text || "").join("").trim();
+    }
+    if (!reply && json?.promptFeedback?.blockReason) reply = `Blocked: ${json.promptFeedback.blockReason}`;
+    if (!reply && json?.candidates?.[0]?.finishReason) reply = `No text (finishReason: ${json.candidates[0].finishReason})`;
+    if (!reply && json?.error?.message) reply = json.error.message;
+    if (!reply) reply = "Sorry—can you rephrase that?";
+
+    return { statusCode: 200, headers, body: JSON.stringify({ reply }) };
+  } catch {
+    return { statusCode: 500, headers, body: JSON.stringify({ error: "Server error" }) };
   }
-
-  init();
-})();
+};
