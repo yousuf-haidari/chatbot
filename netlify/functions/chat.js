@@ -1,8 +1,6 @@
 // netlify/functions/chat.js
-
 const CLIENTS = {
-  // ✅ Add your real clients here
-  "client1": {
+  client1: {
     businessName: "Support",
     location: "prince street oshawa ontario",
     hours: "9pm to 5pm",
@@ -12,17 +10,11 @@ const CLIENTS = {
     services: ["clothing", "drug medicine", "very nice customer service"],
     policies: [
       "Refunds: (14 days refund payback)",
-      "Delivery/Shipping: (usually drelivers in 3-5 days. stay patient.)",
+      "Delivery/Shipping: (usually delivers in 3-5 days. stay patient.)",
     ],
   },
 
-
-
-
-   const CLIENTS = {
-  // client1 already exists...
-
-  "client2": {
+  client2: {
     businessName: "HAIDARI",
     location: "Ontario, Canada (Shipping to Canada & USA)",
     hours: "Online store — 24/7",
@@ -36,50 +28,30 @@ const CLIENTS = {
       "Kanduras",
       "Shalwar Kameez",
       "Kaftans",
-      "Islamic clothing and accessories"
+      "Islamic clothing and accessories",
     ],
 
     products: [
       {
         name: "Thobe",
         sizes: ["S", "M", "L", "XL"],
-        variants: [
-          "White — $59 CAD",
-          "Black — $69 CAD",
-          "Navy — $69 CAD",
-          "Olive — $75 CAD"
-        ]
+        variants: ["White — $59 CAD", "Black — $69 CAD", "Navy — $69 CAD", "Olive — $75 CAD"],
       },
       {
         name: "Kandura",
         sizes: ["S", "M", "L", "XL"],
-        variants: [
-          "White — $65 CAD",
-          "Beige — $65 CAD",
-          "Grey — $70 CAD",
-          "Blue — $75 CAD"
-        ]
+        variants: ["White — $65 CAD", "Beige — $65 CAD", "Grey — $70 CAD", "Blue — $75 CAD"],
       },
       {
         name: "Shalwar Kameez",
         sizes: ["S", "M", "L", "XL"],
-        variants: [
-          "White — $79 CAD",
-          "Cream — $79 CAD",
-          "Brown — $85 CAD",
-          "Charcoal — $85 CAD"
-        ]
+        variants: ["White — $79 CAD", "Cream — $79 CAD", "Brown — $85 CAD", "Charcoal — $85 CAD"],
       },
       {
         name: "Kaftan",
         sizes: ["S", "M", "L", "XL"],
-        variants: [
-          "Black — $89 CAD",
-          "Red — $95 CAD",
-          "Blue — $95 CAD",
-          "Cream — $85 CAD"
-        ]
-      }
+        variants: ["Black — $89 CAD", "Red — $95 CAD", "Blue — $95 CAD", "Cream — $85 CAD"],
+      },
     ],
 
     policies: [
@@ -88,44 +60,28 @@ const CLIENTS = {
       "Free Shipping: Automatically applied when cart has 2 or more items.",
       "Returns: Accepted within 14 days of delivery (unworn, original condition).",
       "Refunds: Processed within 30 days after return approval.",
-      "Payments: Card, Apple Pay, Google Pay, PayPal, Shop Pay."
+      "Payments: Card, Apple Pay, Google Pay, PayPal, Shop Pay.",
     ],
 
     branding: {
       tagline: "YOUSUF IS HERE",
       vibe: "Nike/Adidas/Gymshark energy + traditional modest wear",
       colors: ["Deep Black", "Dark Navy", "Neon Green Accent"],
-      font: "Cinzel"
-    }
-  }
-};
+      font: "Cinzel",
+    },
+  },
 
-  
-  "default": {
+  default: {
     businessName: "Customer Support",
-  location: "",
-  hours: "Our team is available during business hours.",
-  phone: "",
-  email: "",
-  booking: "Please contact our support team for assistance.",
-  services: [
-    "Answering questions",
-    "Providing support",
-    "Helping with bookings",
-  ],
-  policies: [
-    "Support responses are provided as soon as possible.",
-    ],
+    location: "",
+    hours: "Our team is available during business hours.",
+    phone: "",
+    email: "",
+    booking: "Please contact our support team for assistance.",
+    services: ["Answering questions", "Providing support", "Helping with bookings"],
+    policies: ["Support responses are provided as soon as possible."],
   },
 };
-
-exports.handler = async (event) => {
-  const headers = {
-    "Content-Type": "application/json",
-    "Access-Control-Allow-Origin": "*",
-    "Access-Control-Allow-Headers": "Content-Type",
-    "Access-Control-Allow-Methods": "POST,OPTIONS",
-  };
 
   try {
     if (event.httpMethod === "OPTIONS") return { statusCode: 204, headers, body: "" };
