@@ -16,6 +16,91 @@ const CLIENTS = {
     ],
   },
 
+
+
+
+   const CLIENTS = {
+  // client1 already exists...
+
+  "client2": {
+    businessName: "HAIDARI",
+    location: "Ontario, Canada (Shipping to Canada & USA)",
+    hours: "Online store — 24/7",
+    phone: "N/A",
+    email: "businessimageal@gmail.com",
+    booking: "Place orders through the website checkout",
+
+    services: [
+      "Premium modest wear",
+      "Thobes",
+      "Kanduras",
+      "Shalwar Kameez",
+      "Kaftans",
+      "Islamic clothing and accessories"
+    ],
+
+    products: [
+      {
+        name: "Thobe",
+        sizes: ["S", "M", "L", "XL"],
+        variants: [
+          "White — $59 CAD",
+          "Black — $69 CAD",
+          "Navy — $69 CAD",
+          "Olive — $75 CAD"
+        ]
+      },
+      {
+        name: "Kandura",
+        sizes: ["S", "M", "L", "XL"],
+        variants: [
+          "White — $65 CAD",
+          "Beige — $65 CAD",
+          "Grey — $70 CAD",
+          "Blue — $75 CAD"
+        ]
+      },
+      {
+        name: "Shalwar Kameez",
+        sizes: ["S", "M", "L", "XL"],
+        variants: [
+          "White — $79 CAD",
+          "Cream — $79 CAD",
+          "Brown — $85 CAD",
+          "Charcoal — $85 CAD"
+        ]
+      },
+      {
+        name: "Kaftan",
+        sizes: ["S", "M", "L", "XL"],
+        variants: [
+          "Black — $89 CAD",
+          "Red — $95 CAD",
+          "Blue — $95 CAD",
+          "Cream — $85 CAD"
+        ]
+      }
+    ],
+
+    policies: [
+      "Launch Sale: 10% off all products for a limited time (auto-applied).",
+      "Shipping Regions: Canada and USA.",
+      "Free Shipping: Automatically applied when cart has 2 or more items.",
+      "Returns: Accepted within 14 days of delivery (unworn, original condition).",
+      "Refunds: Processed within 30 days after return approval.",
+      "Payments: Card, Apple Pay, Google Pay, PayPal, Shop Pay."
+    ],
+
+    branding: {
+      tagline: "YOUSUF IS HERE",
+      vibe: "Nike/Adidas/Gymshark energy + traditional modest wear",
+      colors: ["Deep Black", "Dark Navy", "Neon Green Accent"],
+      font: "Cinzel"
+    }
+  }
+};
+
+  
   "default": {
     businessName: "Customer Support",
   location: "",
