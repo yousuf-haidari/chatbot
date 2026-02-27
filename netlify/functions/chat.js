@@ -1,4 +1,5 @@
 // netlify/functions/chat.js
+
 const CLIENTS = {
   client1: {
     businessName: "Support",
@@ -21,7 +22,6 @@ const CLIENTS = {
     phone: "N/A",
     email: "businessimageal@gmail.com",
     booking: "Place orders through the website checkout",
-
     services: [
       "Premium modest wear",
       "Thobes",
@@ -30,30 +30,12 @@ const CLIENTS = {
       "Kaftans",
       "Islamic clothing and accessories",
     ],
-
     products: [
-      {
-        name: "Thobe",
-        sizes: ["S", "M", "L", "XL"],
-        variants: ["White — $59 CAD", "Black — $69 CAD", "Navy — $69 CAD", "Olive — $75 CAD"],
-      },
-      {
-        name: "Kandura",
-        sizes: ["S", "M", "L", "XL"],
-        variants: ["White — $65 CAD", "Beige — $65 CAD", "Grey — $70 CAD", "Blue — $75 CAD"],
-      },
-      {
-        name: "Shalwar Kameez",
-        sizes: ["S", "M", "L", "XL"],
-        variants: ["White — $79 CAD", "Cream — $79 CAD", "Brown — $85 CAD", "Charcoal — $85 CAD"],
-      },
-      {
-        name: "Kaftan",
-        sizes: ["S", "M", "L", "XL"],
-        variants: ["Black — $89 CAD", "Red — $95 CAD", "Blue — $95 CAD", "Cream — $85 CAD"],
-      },
+      { name: "Thobe", sizes: ["S","M","L","XL"], variants: ["White — $59 CAD","Black — $69 CAD","Navy — $69 CAD","Olive — $75 CAD"] },
+      { name: "Kandura", sizes: ["S","M","L","XL"], variants: ["White — $65 CAD","Beige — $65 CAD","Grey — $70 CAD","Blue — $75 CAD"] },
+      { name: "Shalwar Kameez", sizes: ["S","M","L","XL"], variants: ["White — $79 CAD","Cream — $79 CAD","Brown — $85 CAD","Charcoal — $85 CAD"] },
+      { name: "Kaftan", sizes: ["S","M","L","XL"], variants: ["Black — $89 CAD","Red — $95 CAD","Blue — $95 CAD","Cream — $85 CAD"] },
     ],
-
     policies: [
       "Launch Sale: 10% off all products for a limited time (auto-applied).",
       "Shipping Regions: Canada and USA.",
@@ -62,7 +44,6 @@ const CLIENTS = {
       "Refunds: Processed within 30 days after return approval.",
       "Payments: Card, Apple Pay, Google Pay, PayPal, Shop Pay.",
     ],
-
     branding: {
       tagline: "YOUSUF IS HERE",
       vibe: "Nike/Adidas/Gymshark energy + traditional modest wear",
@@ -83,6 +64,14 @@ const CLIENTS = {
   },
 };
 
+const headers = {
+  "Content-Type": "application/json",
+  "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Headers": "Content-Type",
+  "Access-Control-Allow-Methods": "POST,OPTIONS",
+};
+
+exports.handler = async (event) => {
   try {
     if (event.httpMethod === "OPTIONS") return { statusCode: 204, headers, body: "" };
     if (event.httpMethod !== "POST") {
@@ -106,7 +95,8 @@ const CLIENTS = {
       return { statusCode: 500, headers, body: JSON.stringify({ error: "Missing GEMINI_API_KEY" }) };
     }
 
-    const clientId = String(body.clientId || "default");
+    // IMPORTANT: accept BOTH "client" and "clientId"
+    const clientId = String(body.client || body.clientId || "default");
     const client = CLIENTS[clientId] || CLIENTS.default;
 
     const BUSINESS_CONTEXT = `
@@ -117,21 +107,17 @@ Phone: ${client.phone}
 Email: ${client.email}
 Booking: ${client.booking}
 Services: ${Array.isArray(client.services) ? client.services.join(", ") : ""}
+Products: ${Array.isArray(client.products) ? client.products.map(p => `${p.name} (${(p.variants||[]).join(", ")}) Sizes: ${(p.sizes||[]).join("/")}`).join(" | ") : ""}
 Policies: ${Array.isArray(client.policies) ? client.policies.join(" | ") : ""}
+Branding: Tagline=${client.branding?.tagline || ""}, Vibe=${client.branding?.vibe || ""}
 `.trim();
 
     const SUPPORT_RULES = `
 You are a CUSTOMER SUPPORT agent for the business above.
-You are NOT ChatGPT and you are NOT a general assistant.
-
-Rules:
-- Be short and direct (1–3 sentences).
-- Answer ONLY business-related questions using the business context.
-- If the user asks something unrelated, reply:
-  "I can help with our services, hours, pricing, and booking. What do you need?"
-- If you don’t know, ask ONE short clarifying question.
-- Always try to guide to an action when helpful (call, visit, book).
-- Never ramble. No life advice. No essays.
+Be short and direct (1–3 sentences).
+Answer ONLY business-related questions using the business context.
+If unrelated: "I can help with our products, prices, shipping, returns, and ordering. What do you need?"
+If you don’t know: ask ONE short clarifying question.
 `.trim();
 
     const prompt = `
@@ -157,28 +143,24 @@ Reply as support:
       }),
     });
 
-    const json = await geminiRes.json();
+    const data = await geminiRes.json();
 
     if (!geminiRes.ok) {
       return {
         statusCode: geminiRes.status,
         headers,
-        body: JSON.stringify({ error: json?.error?.message || "Gemini request failed" }),
+        body: JSON.stringify({ error: data?.error?.message || "Gemini request failed" }),
       };
     }
 
     let reply = "";
-    if (json?.candidates?.length) {
-      const parts = json.candidates[0].content?.parts || [];
-      reply = parts.map((p) => p.text || "").join("").trim();
-    }
-    if (!reply && json?.promptFeedback?.blockReason) reply = `Blocked: ${json.promptFeedback.blockReason}`;
-    if (!reply && json?.candidates?.[0]?.finishReason) reply = `No text (finishReason: ${json.candidates[0].finishReason})`;
-    if (!reply && json?.error?.message) reply = json.error.message;
-    if (!reply) reply = "I can help with services, hours, and booking. What do you need?";
+    const parts = data?.candidates?.[0]?.content?.parts || [];
+    reply = parts.map((p) => p.text || "").join("").trim();
+
+    if (!reply) reply = "I can help with products, prices, shipping, returns, and ordering. What do you need?";
 
     return { statusCode: 200, headers, body: JSON.stringify({ reply }) };
-  } catch {
-    return { statusCode: 500, headers, body: JSON.stringify({ error: "Server error" }) };
+  } catch (err) {
+    return { statusCode: 500, headers, body: JSON.stringify({ error: "Server error", details: String(err) }) };
   }
 };
